@@ -3,7 +3,7 @@ const express = require('express');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const domain = 'http://weather-api:8081';
+const domain = 'http://localhost:8081';
 
 app.get('/weather', async(req, res, next) => {
     const x = req.query.x;
