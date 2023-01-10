@@ -3,48 +3,72 @@ const express = require('express');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const domain = 'http://weather-api:8081';
 
-app.post('/location', async(req, res, next) => {
-
-    const { body } = req;
+app.get('/weather', async(req, res, next) => {
+    const x = req.query.x;
+    const y = req.query.y;
 
     try {
-        await axios.post('http://localhost:8081/location-coord', body);
-
-        res.send('OK');
+		const apiUrl = domain + '/weather/tomorrow';
+		console.log(apiUrl);
+        const response = await axios.get(apiUrl, {
+			params: {
+				"x": x,
+				"y": y
+			}
+		});
+		const { data } = response;
+		
+        res.send(data.hourlyWeathers);
     }
     catch (e) {
         next(e);
     }
 });
+
 app.get('/location', async (req, res, next) => {
 
-    const { code } = req.query;
+    const type = req.query.type;
+    const code = req.query.code;
+    const name = req.query.name;
 
     try {
-        const response = await axios.get('http://localhost:8081/location-coord');
-        const { data } = response;
-
-        // data is
-        // {
-        //   code: number,
-        //   value: string
-        // }[
-
-        const matched = data.filter(elem => elem.code === code);
-
-        if (0 < matched.length) {
-            const value = matched[0].value
-            res.send(value);
-        }
-        else {
-            res.send('no data');
-        }
+		if(type === 'top' || type === 'mid' || type === 'leaf') {		
+		const apiUrl = domain + '/location/' + type;
+		console.log(apiUrl);	
+			const response = await axios.get(apiUrl, {
+				params: {
+					"name": name,
+					"code": code
+				}
+			});
+			const { data } = response;
+			res.send(data);
+		}
+		else {
+			res.error('illegal type value');
+		}
     }
     catch (e) {
         next(e);
     }
 });
+
+app.get('/foo', async(req, res, next) => {
+    try {
+		const apiUrl = domain + '/foo';
+		console.log(apiUrl);
+        const response = await axios.get(apiUrl);
+		const { data } = response;
+		
+        res.send(data);
+    }
+    catch (e) {
+        next(e);
+    }
+});
+
 app.get('/', (req, res) => {
     res.json({
         success: true,
